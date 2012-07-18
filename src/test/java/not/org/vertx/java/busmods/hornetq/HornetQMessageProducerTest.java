@@ -12,10 +12,10 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -27,13 +27,12 @@ import org.vertx.junit4.support.RunInVertx;
 import org.vertx.junit4.support.annotations.Verticle;
 import org.vertx.junit4.support.annotations.Verticles;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class HornetQMessageProducerTest {
 
@@ -107,7 +106,8 @@ public class HornetQMessageProducerTest {
         session.start();
         ClientConsumer consumer = session.createConsumer(QUEUE_ADDRESS);
         ClientMessage message = consumer.receiveImmediate();
-        System.out.println(message.getBodyBuffer().readString());
+        assertNotNull(message);
+        assertEquals("value", new JsonObject(message.getBodyBuffer().readString()).getString("key"));
     }
 
     public static class SendMessageVerticle extends org.vertx.java.deploy.Verticle {
