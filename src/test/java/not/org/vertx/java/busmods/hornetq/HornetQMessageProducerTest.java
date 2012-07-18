@@ -16,6 +16,9 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.junit.*;
+import org.junit.rules.ExternalResource;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.vertx.java.busmods.hornetq.HornetQMessageProducer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -34,40 +37,49 @@ import java.util.Map;
 
 public class HornetQMessageProducerTest {
 
-    @Rule
-    public RunInVertx vertxRule = new RunInVertx();
     private static final int VERTX_PORT = 8383;
     private static final String QUEUE_ADDRESS = "testQueue";
 
-    private static HornetQServer hornetQServer;
-
-    @BeforeClass
-    public static void startEmbeddedHornetQ() throws Exception {
-        Configuration conf = new ConfigurationImpl();
-        conf.setPersistenceEnabled(false);
-        conf.setSecurityEnabled(false);
-        conf.setClustered(false);
-        conf.setQueueConfigurations(
-                Arrays.asList(new CoreQueueConfiguration(QUEUE_ADDRESS, QUEUE_ADDRESS, null, true))
-        );
-        conf.setAcceptorConfigurations(new HashSet<TransportConfiguration>(
-            Arrays.asList(
-                new TransportConfiguration(
-                    NettyAcceptorFactory.class.getCanonicalName())
-            )
-        ));
-        hornetQServer = HornetQServers.newHornetQServer(conf);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    hornetQServer.start();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
+    @Rule public TestRule chain = RuleChain
+            .outerRule(new ExternalResource() {
+                private HornetQServer hornetQServer;
+                @Override
+                protected void before() throws Throwable {
+                    Configuration conf = new ConfigurationImpl();
+                    conf.setPersistenceEnabled(false);
+                    conf.setSecurityEnabled(false);
+                    conf.setClustered(false);
+                    conf.setQueueConfigurations(
+                            Arrays.asList(new CoreQueueConfiguration(QUEUE_ADDRESS, QUEUE_ADDRESS, null, true))
+                    );
+                    conf.setAcceptorConfigurations(new HashSet<TransportConfiguration>(
+                            Arrays.asList(
+                                    new TransportConfiguration(
+                                            NettyAcceptorFactory.class.getCanonicalName())
+                            )
+                    ));
+                    hornetQServer = HornetQServers.newHornetQServer(conf);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                hornetQServer.start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                };
+                @Override
+                protected void after() {
+                    try {
+                        hornetQServer.stop();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+            })
+            .around(new RunInVertx());
 
     @Test
     @Verticles({
@@ -96,11 +108,6 @@ public class HornetQMessageProducerTest {
         ClientConsumer consumer = session.createConsumer(QUEUE_ADDRESS);
         ClientMessage message = consumer.receiveImmediate();
         System.out.println(message.getBodyBuffer().readString());
-    }
-
-    @AfterClass
-    public static void stopEmbeddedHornetQ() throws Exception {
-        hornetQServer.stop();
     }
 
     public static class SendMessageVerticle extends org.vertx.java.deploy.Verticle {
