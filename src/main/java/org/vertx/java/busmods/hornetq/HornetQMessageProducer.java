@@ -44,7 +44,7 @@ public class HornetQMessageProducer extends BusModBase implements Handler<Messag
         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         serverLocator.setBlockOnDurableSend(false);
         ClientSessionFactory factory = serverLocator.createSessionFactory();
-        session = factory.createSession();
+        session = factory.createSession(true, true, 0);
         producer = session.createProducer(address);
         session.start();
     }
@@ -65,6 +65,7 @@ public class HornetQMessageProducer extends BusModBase implements Handler<Messag
         try {
             container.getLogger().debug("Sending message to " + address);
             producer.send(address, message);
+            message.acknowledge();
         } catch (HornetQException e) {
             sendError(event, "Error sending message: " + e.getMessage());
         }
