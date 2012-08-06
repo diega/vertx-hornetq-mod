@@ -108,6 +108,9 @@ public class HornetQMessageProducerTest {
         ClientMessage message = consumer.receiveImmediate();
         assertNotNull(message);
         assertEquals("value", new JsonObject(message.getBodyBuffer().readString()).getString("key"));
+        consumer.close();
+        session.close();
+        factory.close();
     }
 
     public static class SendMessageVerticle extends org.vertx.java.deploy.Verticle {
