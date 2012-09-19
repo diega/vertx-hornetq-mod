@@ -11,14 +11,19 @@
   <url>https://github.com/diega/vertx-junit4-test</url>
 
   <properties>
-    <vertx.version>1.1.0</vertx.version>
+    <vertx.version>1.2.3.final</vertx.version>
     <hornetq.version>2.2.13.Final</hornetq.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.vertx</groupId>
+      <groupId>org.vert-x</groupId>
       <artifactId>vertx-platform</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.vert-x</groupId>
+      <artifactId>vertx-lang-java</artifactId>
       <version>${vertx.version}</version>
     </dependency>
     <dependency>
@@ -49,12 +54,6 @@
       <artifactId>httpclient</artifactId>
       <version>4.2</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mozilla</groupId>
-      <artifactId>rhino</artifactId>
-      <version>1.7R4</version>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
