@@ -68,6 +68,9 @@ public class HornetQMessageProducerTest {
                             }
                         }
                     }).start();
+                    while (!hornetQServer.isStarted()) {
+                        Thread.sleep(100);
+                    }
                 };
                 @Override
                 protected void after() {
