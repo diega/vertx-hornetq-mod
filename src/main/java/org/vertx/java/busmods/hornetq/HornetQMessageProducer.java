@@ -18,6 +18,8 @@ public class HornetQMessageProducer extends BusModBase implements Handler<Messag
     public static final String address = "vertx.mod.hornetq";
     private ClientSession session;
     private ClientProducer producer;
+    private ServerLocator serverLocator;
+    private ClientSessionFactory sessionFactory;
 
     @Override
     public void start() {
@@ -41,10 +43,10 @@ public class HornetQMessageProducer extends BusModBase implements Handler<Messag
         TransportConfiguration transportConfiguration = new TransportConfiguration(
                 NettyConnectorFactory.class.getCanonicalName(),
                 connectionParams);
-        ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
+        serverLocator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         serverLocator.setBlockOnDurableSend(false);
-        ClientSessionFactory factory = serverLocator.createSessionFactory();
-        session = factory.createSession(true, true, 0);
+        sessionFactory = serverLocator.createSessionFactory();
+        session = sessionFactory.createSession(true, true, 0);
         producer = session.createProducer(address);
         session.start();
     }
@@ -69,5 +71,13 @@ public class HornetQMessageProducer extends BusModBase implements Handler<Messag
         } catch (HornetQException e) {
             sendError(event, "Error sending message: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        producer.close();
+        session.stop();
+        sessionFactory.close();
+        serverLocator.close();
     }
 }

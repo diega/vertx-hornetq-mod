@@ -1,5 +1,6 @@
 package not.org.vertx.java.busmods.hornetq;
 
+import junit.framework.Assert;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -64,6 +65,7 @@ public class HornetQMessageProducerTest {
                             try {
                                 hornetQServer.start();
                             } catch (Exception e) {
+                                Assert.fail(e.getMessage());
                                 e.printStackTrace();
                             }
                         }
